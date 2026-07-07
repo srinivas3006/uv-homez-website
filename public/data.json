@@ -1,0 +1,113 @@
+{
+  "services": [
+    {
+      "id": 5,
+      "title": "False Ceiling & Lighting",
+      "description": "Designer false ceilings with ambient LED lighting.",
+      "icon": "lightbulb"
+    },
+    {
+      "id": 6,
+      "title": "Woodwork & Furniture",
+      "description": "Custom woodwork, TV units, wardrobes & modular furniture.",
+      "icon": "couch"
+    },
+    {
+      "id": 7,
+      "title": "Blinds, Curtains & Wallpaper",
+      "description": "Premium window treatments and wall decor.",
+      "icon": "palette"
+    },
+    {
+      "id": 4,
+      "title": "Construction Execution",
+      "description": "Quality construction with timely delivery.",
+      "icon": "hammer"
+    },
+    {
+      "id": 1,
+      "title": "Project Development",
+      "description": "End-to-end residential & commercial project development.",
+      "icon": "building"
+    },
+    {
+      "id": 2,
+      "title": "2D Architectural Planning",
+      "description": "Detailed floor plans and architectural blueprints.",
+      "icon": "ruler"
+    },
+    {
+      "id": 3,
+      "title": "Contracting Services",
+      "description": "Reliable contracting for all scales of construction.",
+      "icon": "hard-hat"
+    },
+    {
+      "id": 8,
+      "title": "PVC Flooring & Green Grass",
+      "description": "Durable flooring and artificial green grass solutions.",
+      "icon": "tree"
+    }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "category": "Living Room",
+      "title": "Modern Minimalist Living",
+      "image": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+      "id": 2,
+      "category": "Kitchen",
+      "title": "Luxury Modular Kitchen",
+      "image": "https://images.unsplash.com/photo-1556910103-1c02745a872f?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+      "id": 3,
+      "category": "Bedroom",
+      "title": "Serene Master Bedroom",
+      "image": "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+      "id": 4,
+      "category": "Bathroom",
+      "title": "Spa-like Bathroom Retreat",
+      "image": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+      "id": 5,
+      "category": "Office",
+      "title": "Corporate Executive Suite",
+      "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+      "id": 6,
+      "category": "Outdoor",
+      "title": "Premium Villa Exterior",
+      "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800"
+    }
+  ],
+  "testimonials": [
+    {
+      "id": 1,
+      "name": "Rahul Sharma",
+      "role": "Homeowner",
+      "text": "UV Homez completely transformed our living space. Their attention to detail and premium finish exceeded our expectations.",
+      "rating": 5
+    },
+    {
+      "id": 2,
+      "name": "Priya Reddy",
+      "role": "Commercial Client",
+      "text": "Professional, timely, and impeccable architectural planning. The execution was flawless from start to finish.",
+      "rating": 5
+    },
+    {
+      "id": 3,
+      "name": "Anil Kumar",
+      "role": "Villa Owner",
+      "text": "The woodwork and false ceiling lighting provided an incredibly luxurious feel to our new home.",
+      "rating": 5
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+backend:
+  name: git-gateway
+  branch: main
+
+# local_backend: true
+
+# These lines should show where media files will be stored in the repo
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+collections:
+  - name: "data"
+    label: "Site Content"
+    files:
+      - file: "public/data.json"
+        name: "site_data"
+        label: "Site Data"
+        fields:
+          - label: "Services"
+            name: "services"
+            widget: "list"
+            fields:
+              - {label: "ID", name: "id", widget: "number"}
+              - {label: "Title", name: "title", widget: "string"}
+              - {label: "Description", name: "description", widget: "text"}
+              - {label: "Icon (FontAwesome Name)", name: "icon", widget: "string"}
+          - label: "Projects"
+            name: "projects"
+            widget: "list"
+            fields:
+              - {label: "ID", name: "id", widget: "number"}
+              - {label: "Category", name: "category", widget: "string"}
+              - {label: "Title", name: "title", widget: "string"}
+              - {label: "Image", name: "image", widget: "image"}
+          - label: "Testimonials"
+            name: "testimonials"
+            widget: "list"
+            fields:
+              - {label: "ID", name: "id", widget: "number"}
+              - {label: "Name", name: "name", widget: "string"}
+              - {label: "Role", name: "role", widget: "string"}
+              - {label: "Review Text", name: "text", widget: "text"}
+              - {label: "Rating (1-5)", name: "rating", widget: "number", value_type: "int", min: 1, max: 5}
