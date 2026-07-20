@@ -22,6 +22,9 @@ When you are ready to make the form actually send data, just follow these exact 
 var sheetName = 'Sheet1';
 var scriptProp = PropertiesService.getScriptProperties();
 
+// CHANGE THIS to the email address where you want to receive notifications
+var ADMIN_EMAIL = "your-email@gmail.com"; 
+
 function initialSetup () {
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   scriptProp.setProperty('key', activeSpreadsheet.getId());
@@ -42,7 +45,38 @@ function doPost (e) {
       return header === 'Timestamp' ? new Date() : e.parameter[header];
     });
 
+    // 1. Save data to Google Sheet
     sheet.getRange(nextRow, 1, 1, newRow.length).setValues([newRow]);
+
+    // 2. Send email notification to YOU (the Admin)
+    var clientName = e.parameter['name'] || 'Someone';
+    var clientEmail = e.parameter['email'] || 'No email provided';
+    var clientPhone = e.parameter['phone'] || 'No phone provided';
+    var clientMsg = e.parameter['message'] || 'No message';
+
+    MailApp.sendEmail({
+      to: ADMIN_EMAIL,
+      subject: "New Lead from UV Homez Website: " + clientName,
+      body: "You have a new inquiry from the website!\n\n" +
+            "Name: " + clientName + "\n" +
+            "Phone: " + clientPhone + "\n" +
+            "Email: " + clientEmail + "\n" +
+            "Message: " + clientMsg + "\n\n" +
+            "You can also view this in your Google Sheet."
+    });
+
+    // 3. (Optional) Send Auto-Reply to the CLIENT
+    if (e.parameter['email']) {
+      MailApp.sendEmail({
+        to: e.parameter['email'],
+        subject: "Thank you for contacting UV Homez!",
+        body: "Hi " + clientName + ",\n\n" +
+              "Thank you for reaching out to UV Homez. We have received your message and our team will get back to you shortly.\n\n" +
+              "Best regards,\n" +
+              "The UV Homez Team\n" +
+              "Phone: 93461 25986"
+      });
+    }
 
     return ContentService
       .createTextOutput(JSON.stringify({ 'result': 'success', 'row': nextRow }))
