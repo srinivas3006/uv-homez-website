@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initNavbar();
     initMobileNav();
     initContactForm();
+    initProjectModal();
   } catch (error) {
     console.error('Error loading site data:', error);
   }
@@ -41,6 +42,12 @@ function renderProjects() {
   const filterContainer = document.querySelector('.portfolio-filters');
   const gridContainer = document.getElementById('projects-grid');
   if (!filterContainer || !gridContainer) return;
+
+  if (!siteData.projects || siteData.projects.length === 0) {
+    gridContainer.innerHTML = '<p class="text-center text-muted" style="grid-column: 1 / -1;">New projects coming soon...</p>';
+    filterContainer.innerHTML = '';
+    return;
+  }
 
   // Extract unique categories, add 'All'
   const categories = ['All', ...new Set(siteData.projects.map(p => p.category))];
@@ -73,9 +80,14 @@ function renderProjects() {
 }
 
 function renderProjectsGrid(projects, container) {
+  if (projects.length === 0) {
+    container.innerHTML = '<p class="text-center text-muted" style="grid-column: 1 / -1;">No projects in this category.</p>';
+    return;
+  }
+
   const html = projects.map((project, index) => `
-    <div class="project-card animate-up stagger-${(index % 4) + 1}">
-      <img src="${project.image}" alt="${project.title}" loading="lazy">
+    <div class="project-card animate-up stagger-${(index % 4) + 1}" data-id="${project.id}">
+      <img src="${project.afterImage || project.image || 'https://via.placeholder.com/800x600'}" alt="${project.title}" loading="lazy" style="object-fit: cover;">
       <div class="project-overlay">
         <p>${project.category}</p>
         <h3>${project.title}</h3>
@@ -97,6 +109,11 @@ function renderTestimonials() {
   const container = document.getElementById('testimonials-grid');
   if (!container) return;
 
+  if (!siteData.testimonials || siteData.testimonials.length === 0) {
+    container.innerHTML = '<p class="text-center text-muted" style="grid-column: 1 / -1;">Client reviews coming soon...</p>';
+    return;
+  }
+
   const html = siteData.testimonials.map((t, index) => `
     <div class="testimonial-card animate-up stagger-${(index % 3) + 1}">
       <div class="stars">
@@ -105,12 +122,54 @@ function renderTestimonials() {
       <p class="testimonial-text">"${t.text}"</p>
       <div class="client-info">
         <h4>${t.name}</h4>
-        <p>${t.role}</p>
+        <p>${t.role || 'Client'}</p>
       </div>
     </div>
   `).join('');
   
   container.innerHTML = html;
+}
+
+function initProjectModal() {
+  const modal = document.getElementById('project-modal');
+  const closeBtn = document.querySelector('.close-modal');
+  const gridContainer = document.getElementById('projects-grid');
+  
+  if (!modal || !closeBtn || !gridContainer) return;
+
+  closeBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.classList.add('hidden');
+  });
+
+  gridContainer.addEventListener('click', (e) => {
+    const card = e.target.closest('.project-card');
+    if (!card) return;
+
+    const projectId = parseInt(card.getAttribute('data-id'));
+    const project = siteData.projects.find(p => p.id === projectId);
+    
+    if (project) {
+      document.getElementById('modal-title').textContent = project.title;
+      document.getElementById('modal-category').textContent = project.category;
+      
+      const sqftEl = document.getElementById('modal-sqft');
+      if (project.sqft) {
+        sqftEl.querySelector('span').textContent = project.sqft;
+        sqftEl.style.display = 'block';
+      } else {
+        sqftEl.style.display = 'none';
+      }
+
+      document.getElementById('modal-before').src = project.beforeImage || 'https://via.placeholder.com/800x600?text=No+Before+Image';
+      document.getElementById('modal-after').src = project.afterImage || project.image || 'https://via.placeholder.com/800x600?text=No+After+Image';
+
+      modal.classList.remove('hidden');
+    }
+  });
 }
 
 function initScrollAnimations() {

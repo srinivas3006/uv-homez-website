@@ -50,8 +50,16 @@
           <input type="text" id="proj-title" required>
         </div>
         <div class="form-group">
-          <label>Project Image (JPG/PNG)</label>
-          <input type="file" id="proj-image" accept="image/*" required>
+          <label>Square Feet (Optional)</label>
+          <input type="text" id="proj-sqft" placeholder="e.g. 1500">
+        </div>
+        <div class="form-group">
+          <label>Before Image (JPG/PNG)</label>
+          <input type="file" id="proj-before" accept="image/*" required>
+        </div>
+        <div class="form-group">
+          <label>After Image (JPG/PNG)</label>
+          <input type="file" id="proj-after" accept="image/*" required>
         </div>
         <button type="submit" class="btn btn-primary w-100" id="btn-project">Upload Project</button>
       </form>
@@ -152,54 +160,85 @@
       btn.textContent = 'Save Testimonial';
     }
 
+    // Helper function to compress images before upload
+    function compressImage(file, maxWidth = 1200) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const scaleSize = maxWidth / img.width;
+            
+            // Only scale down if it's larger than maxWidth
+            if (scaleSize < 1) {
+              canvas.width = maxWidth;
+              canvas.height = img.height * scaleSize;
+            } else {
+              canvas.width = img.width;
+              canvas.height = img.height;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            // Get base64 string without data:image/jpeg;base64, prefix
+            const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+            resolve(base64);
+          };
+        };
+      });
+    }
+
     async function submitProject(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-project');
-      const fileInput = document.getElementById('proj-image');
-      if (!fileInput.files[0]) return;
+      const beforeInput = document.getElementById('proj-before');
+      const afterInput = document.getElementById('proj-after');
+      
+      if (!beforeInput.files[0] || !afterInput.files[0]) return;
 
       btn.disabled = true;
-      btn.textContent = 'Uploading...';
+      btn.textContent = 'Compressing & Uploading...';
 
-      const file = fileInput.files[0];
-      const reader = new FileReader();
+      try {
+        const beforeBase64 = await compressImage(beforeInput.files[0]);
+        const afterBase64 = await compressImage(afterInput.files[0]);
 
-      reader.onload = async function(event) {
-        // Base64 string without the data:image... prefix
-        const base64Data = event.target.result.split(',')[1];
-        
         const data = {
           password: adminPassword,
           category: document.getElementById('proj-category').value,
           title: document.getElementById('proj-title').value,
-          filename: file.name,
-          imageContent: base64Data
+          sqft: document.getElementById('proj-sqft').value,
+          beforeFilename: beforeInput.files[0].name,
+          beforeContent: beforeBase64,
+          afterFilename: afterInput.files[0].name,
+          afterContent: afterBase64
         };
 
-        try {
-          const res = await fetch('/api/save-project', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          });
-          const result = await res.json();
-          
-          if (res.ok) {
-            showStatus('project-status', 'Project uploaded successfully! It will appear on the site in ~1 minute.', true);
-            document.getElementById('project-form').reset();
-          } else {
-            showStatus('project-status', result.error || 'Failed to save.', false);
-            if (res.status === 401) logout();
-          }
-        } catch (err) {
-          showStatus('project-status', 'Network error.', false);
-        }
+        const res = await fetch('/api/save-project', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
         
-        btn.disabled = false;
-        btn.textContent = 'Upload Project';
-      };
-
-      reader.readAsDataURL(file);
+        const result = await res.json();
+        
+        if (res.ok) {
+          showStatus('project-status', 'Project uploaded successfully! It will appear on the site in ~1 minute.', true);
+          document.getElementById('project-form').reset();
+        } else {
+          showStatus('project-status', result.error || 'Failed to save.', false);
+          if (res.status === 401) logout();
+        }
+      } catch (err) {
+        showStatus('project-status', 'Network error.', false);
+      }
+      
+      btn.disabled = false;
+      btn.textContent = 'Upload Project';
     }
   </script>
 </body>

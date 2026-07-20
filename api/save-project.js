@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { password, category, title, filename, imageContent } = req.body;
+  const { password, category, title, sqft, beforeFilename, beforeContent, afterFilename, afterContent } = req.body;
 
   if (password !== process.env.ADMIN_PASSWORD) {
     return res.status(401).json({ error: 'Invalid password' });
@@ -17,28 +17,36 @@ export default async function handler(req, res) {
   const repo = 'uv-homez-website';
   
   try {
-    // 1. Upload the image to public/images/
-    // Clean filename and make it unique
-    const cleanFilename = filename.replace(/[^a-zA-Z0-9.\-_]/g, '');
-    const uniqueFilename = `${Date.now()}-${cleanFilename}`;
-    const imagePath = `public/images/projects/${uniqueFilename}`;
-    const imageUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${imagePath}`;
+    const timestamp = Date.now();
+    
+    // Function to upload a single image to GitHub
+    async function uploadToGitHub(filename, base64Content) {
+      const cleanFilename = filename.replace(/[^a-zA-Z0-9.\-_]/g, '');
+      const uniqueFilename = `${timestamp}-${cleanFilename}`;
+      const imagePath = `public/images/projects/${uniqueFilename}`;
+      const imageUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${imagePath}`;
 
-    const uploadImageRes = await fetch(imageUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: `Admin Panel: Upload image ${uniqueFilename}`,
-        content: imageContent, // already base64 from client
-        branch: 'main'
-      })
-    });
+      const uploadRes = await fetch(imageUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: `Admin Panel: Upload image ${uniqueFilename}`,
+          content: base64Content,
+          branch: 'main'
+        })
+      });
 
-    if (!uploadImageRes.ok) throw new Error('Failed to upload image to GitHub');
+      if (!uploadRes.ok) throw new Error(`Failed to upload ${filename}`);
+      return `/images/projects/${uniqueFilename}`;
+    }
+
+    // 1. Upload both images
+    const beforeImagePath = await uploadToGitHub(beforeFilename, beforeContent);
+    const afterImagePath = await uploadToGitHub(afterFilename, afterContent);
 
     // 2. Update data.json with the new project
     const dataPath = 'public/data.json';
@@ -67,7 +75,9 @@ export default async function handler(req, res) {
       id: newId,
       category,
       title,
-      image: `/images/projects/${uniqueFilename}` // public path
+      sqft: sqft || '',
+      beforeImage: beforeImagePath,
+      afterImage: afterImagePath
     });
 
     // 3. Commit data.json back to GitHub
