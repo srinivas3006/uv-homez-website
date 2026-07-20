@@ -50,5 +50,12 @@
     }
   ],
   "projects": [],
-  "testimonials": []
+  "testimonials": [
+    {
+      "id": 1,
+      "name": "Ethan",
+      "text": "Wonderfull work",
+      "rating": 5
+    }
+  ]
 }
