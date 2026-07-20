@@ -57,7 +57,10 @@ To run this project locally on your machine, you need [Node.js](https://nodejs.o
 │   └── style.css           # All styling, variables, animations, and media queries
 ├── index.html              # Main HTML structure
 ├── package.json            # Project configuration and dependencies
-└── vite.config.js          # (Optional) Vite configuration
+├── vercel.json             # Vercel deployment and routing configuration
+└── api/                    # Vercel Serverless Functions for Admin Panel
+    ├── save-project.js
+    └── save-testimonial.js
 ```
 
 ## 📝 Updating Content (No Code Required)
@@ -77,12 +80,14 @@ The website will automatically detect the new category, add a filter button for 
 
 ## 🚀 Deployment
 
-This project is optimized for deployment on **Netlify**. 
+This project is optimized for deployment on **Vercel**. 
 
-1. Connect this GitHub repository to your Netlify account.
-2. Set the build command to `npm run build`.
-3. Set the publish directory to `dist`.
-4. Netlify will automatically build and deploy your site every time you push to the `main` branch.
+1. Push your code to a GitHub repository.
+2. Import the repository into Vercel.
+3. Add the following Environment Variables in Vercel:
+   - `ADMIN_PASSWORD`: Your secret password for the `/admin` dashboard.
+   - `GITHUB_TOKEN`: A GitHub Personal Access Token to allow the serverless functions to update the repository.
+4. Vercel will automatically build and deploy your site on every push to the `main` branch.
 
 ## 📄 License
 

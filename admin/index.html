@@ -1,12 +1,206 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Content Manager</title>
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UV Homez - Custom Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/src/style.css">
+  <style>
+    body { background-color: #f8f9fa; padding: 2rem; }
+    .admin-container { max-width: 600px; margin: 0 auto; background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .hidden { display: none !important; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-weight: bold; margin-bottom: 0.5rem; }
+    .form-group input, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; }
+    .status { margin-top: 1rem; padding: 1rem; border-radius: 6px; text-align: center; font-weight: bold; }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+    hr { margin: 2rem 0; border: 0; border-top: 1px solid #eee; }
+  </style>
 </head>
 <body>
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+
+  <div class="admin-container" id="login-section">
+    <h2 class="title text-navy text-center mb-4">Admin Login</h2>
+    <div class="form-group">
+      <label for="password">Secret Password</label>
+      <input type="password" id="password" placeholder="Enter admin password">
+    </div>
+    <button class="btn btn-primary w-100" onclick="login()">LOGIN</button>
+    <div id="login-status" class="status hidden"></div>
+  </div>
+
+  <div class="admin-container hidden" id="dashboard-section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h2 class="title text-navy m-0">Admin Dashboard</h2>
+      <button class="btn btn-outline-primary" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Add Project Form -->
+    <div class="card p-4 mb-4" style="border: 1px solid #eee; border-radius: 8px;">
+      <h3 class="text-gold mb-3">Add New Project</h3>
+      <form id="project-form" onsubmit="submitProject(event)">
+        <div class="form-group">
+          <label>Category (e.g., Kitchen, Bedroom)</label>
+          <input type="text" id="proj-category" required>
+        </div>
+        <div class="form-group">
+          <label>Project Title</label>
+          <input type="text" id="proj-title" required>
+        </div>
+        <div class="form-group">
+          <label>Project Image (JPG/PNG)</label>
+          <input type="file" id="proj-image" accept="image/*" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100" id="btn-project">Upload Project</button>
+      </form>
+      <div id="project-status" class="status hidden"></div>
+    </div>
+
+    <!-- Add Testimonial Form -->
+    <div class="card p-4" style="border: 1px solid #eee; border-radius: 8px;">
+      <h3 class="text-gold mb-3">Add Testimonial</h3>
+      <form id="testimonial-form" onsubmit="submitTestimonial(event)">
+        <div class="form-group">
+          <label>Client Name</label>
+          <input type="text" id="test-name" required>
+        </div>
+        <div class="form-group">
+          <label>Rating (1-5)</label>
+          <input type="number" id="test-rating" min="1" max="5" value="5" required>
+        </div>
+        <div class="form-group">
+          <label>Review Text</label>
+          <textarea id="test-text" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary w-100" id="btn-test">Save Testimonial</button>
+      </form>
+      <div id="testimonial-status" class="status hidden"></div>
+    </div>
+  </div>
+
+  <script>
+    let adminPassword = localStorage.getItem('uv_admin_pwd') || '';
+
+    if (adminPassword) {
+      showDashboard();
+    }
+
+    function login() {
+      const pwd = document.getElementById('password').value;
+      if (!pwd) return;
+      adminPassword = pwd;
+      localStorage.setItem('uv_admin_pwd', pwd);
+      showDashboard();
+    }
+
+    function logout() {
+      adminPassword = '';
+      localStorage.removeItem('uv_admin_pwd');
+      document.getElementById('login-section').classList.remove('hidden');
+      document.getElementById('dashboard-section').classList.add('hidden');
+      document.getElementById('password').value = '';
+    }
+
+    function showDashboard() {
+      document.getElementById('login-section').classList.add('hidden');
+      document.getElementById('dashboard-section').classList.remove('hidden');
+    }
+
+    function showStatus(elementId, message, isSuccess) {
+      const el = document.getElementById(elementId);
+      el.textContent = message;
+      el.className = `status ${isSuccess ? 'success' : 'error'}`;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 5000);
+    }
+
+    async function submitTestimonial(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-test');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      const data = {
+        password: adminPassword,
+        name: document.getElementById('test-name').value,
+        rating: parseInt(document.getElementById('test-rating').value),
+        text: document.getElementById('test-text').value
+      };
+
+      try {
+        const res = await fetch('/api/save-testimonial', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        
+        if (res.ok) {
+          showStatus('testimonial-status', 'Testimonial saved successfully! It will appear on the site in ~1 minute.', true);
+          document.getElementById('testimonial-form').reset();
+        } else {
+          showStatus('testimonial-status', result.error || 'Failed to save.', false);
+          if (res.status === 401) logout(); // Password wrong
+        }
+      } catch (err) {
+        showStatus('testimonial-status', 'Network error.', false);
+      }
+      
+      btn.disabled = false;
+      btn.textContent = 'Save Testimonial';
+    }
+
+    async function submitProject(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-project');
+      const fileInput = document.getElementById('proj-image');
+      if (!fileInput.files[0]) return;
+
+      btn.disabled = true;
+      btn.textContent = 'Uploading...';
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+
+      reader.onload = async function(event) {
+        // Base64 string without the data:image... prefix
+        const base64Data = event.target.result.split(',')[1];
+        
+        const data = {
+          password: adminPassword,
+          category: document.getElementById('proj-category').value,
+          title: document.getElementById('proj-title').value,
+          filename: file.name,
+          imageContent: base64Data
+        };
+
+        try {
+          const res = await fetch('/api/save-project', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          const result = await res.json();
+          
+          if (res.ok) {
+            showStatus('project-status', 'Project uploaded successfully! It will appear on the site in ~1 minute.', true);
+            document.getElementById('project-form').reset();
+          } else {
+            showStatus('project-status', result.error || 'Failed to save.', false);
+            if (res.status === 401) logout();
+          }
+        } catch (err) {
+          showStatus('project-status', 'Network error.', false);
+        }
+        
+        btn.disabled = false;
+        btn.textContent = 'Upload Project';
+      };
+
+      reader.readAsDataURL(file);
+    }
+  </script>
 </body>
 </html>
